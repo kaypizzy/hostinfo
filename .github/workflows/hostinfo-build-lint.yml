@@ -1,4 +1,4 @@
-name: Host Info Server Build, Lint
+name: Host Info Server Build Automation with Security Scanning
 
 on:
   push:
@@ -55,10 +55,25 @@ jobs:
       - uses: advanced-security/python-lint-code-scanning-action@v1
         with:
           linter: ${{ matrix.linter }}
-
-      # AI lint summarizer
       - name: AI Lint Feedback (summary of issues)
         if: github.event_name == 'pull_request'
+        uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run PyCharm Security
+        uses: tonybaloney/pycharm-security@master
+        with:
+          path: python/
+
+      # AI Security Risk Summary
+      - name: AI Security Risk Summary
         uses: anc95/ChatGPT-CodeReview@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
